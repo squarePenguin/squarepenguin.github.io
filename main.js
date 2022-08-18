@@ -174,7 +174,7 @@ class Graphics {
             // autoResize: true,
             // resolution: devicePixelRatio,
             width: 360,
-            height: 730
+            height: 720
          });
         document.body.appendChild(this.app.view);
         // // Resize function window
@@ -369,4 +369,4 @@ class Graphics {
 const graphics = new Graphics();
 
 let game = new Game();
-graphics.draw_game({x:MARGIN, y:MARGIN, game});
+graphics.draw_game({x:MARGIN, y:10, game});
