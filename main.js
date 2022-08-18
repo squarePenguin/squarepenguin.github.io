@@ -207,7 +207,7 @@ class Graphics {
         const score_style = 
             new PIXI.TextStyle({
                 fontFamily: 'Arial',
-                fontSize: 24,
+                fontSize: 22,
                 fill: ['#ffffff'],
                 strokeThickness: 5,
                 wordWrapWidth: 440,
@@ -228,7 +228,7 @@ class Graphics {
         const game_over_style = 
             new PIXI.TextStyle({
                 fontFamily: 'Arial',
-                fontSize: 32,
+                fontSize: 28,
                 stroke: '#4a1850',
                 fill: ['#ffffff'],
                 fontStyle: 'italic',
@@ -316,7 +316,7 @@ class Graphics {
         let boardBounds = board.getBounds();
         let score = args.player.score();
         let scoreText  = new PIXI.Text("Score: " + String(score), this.text_styles["score"]);
-        scoreText.x = boardBounds.x + 205;
+        scoreText.x = boardBounds.x + 210;
         if (args.flip) {
             scoreText.y = boardBounds.y + PLAYER_SIZE - 5;
         } else {
@@ -352,7 +352,7 @@ class Graphics {
         if (game.game_over()) {
             let text = new PIXI.Text("GAME\nOVER!", this.text_styles["game_over"]);
             text.x = x;
-            text.y = y + this.app.screen.height / 2 - 57;
+            text.y = y + this.app.screen.height / 2 - 55;
             container.addChild(text);
             text.interactive = true;
             let restart = () => {
