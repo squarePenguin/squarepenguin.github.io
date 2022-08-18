@@ -169,7 +169,10 @@ const PLAYER_SIZE = 3 * CELL_SIZE + 3 * PADDING;
 
 class Graphics {
     constructor() {
-        this.app = new PIXI.Application({ width: 640, height: 960 });
+        this.app = new PIXI.Application({ 
+            autoResize: true,
+            resolution: devicePixelRatio,
+         });
         document.body.appendChild(this.app.view);
         this.children = []
         const dice_style = (fill) =>
@@ -303,8 +306,9 @@ class Graphics {
         scoreText.x = boardBounds.x + boardBounds.width + 2 * PADDING;
         scoreText.y = boardBounds.y + PADDING;
         container.addChild(scoreText);
-        if (!game.game_over && args.player.which == args.game.turn) {
-            let die = game.die;
+        console.log(args.player.which, args.game.turn, game.game_over());
+        if (!args.game.game_over() && args.player.which == args.game.turn) {
+            let die = args.game.die;
             let dieText = new PIXI.Text(String(die), this.text_styles["next_move"]);
             dieText.x = boardBounds.x + boardBounds.width + 70;
             dieText.y = boardBounds.y + boardBounds.height / 2 - 50;
