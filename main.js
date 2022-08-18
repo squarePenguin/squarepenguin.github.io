@@ -174,7 +174,7 @@ class Graphics {
             // autoResize: true,
             // resolution: devicePixelRatio,
             width: 360,
-            height: 800
+            height: 750
          });
         document.body.appendChild(this.app.view);
         // // Resize function window
@@ -207,7 +207,7 @@ class Graphics {
         const score_style = 
             new PIXI.TextStyle({
                 fontFamily: 'Arial',
-                fontSize: 32,
+                fontSize: 24,
                 fill: ['#ffffff'],
                 strokeThickness: 5,
                 wordWrapWidth: 440,
@@ -216,7 +216,7 @@ class Graphics {
         const next_move_style = 
             new PIXI.TextStyle({
                 fontFamily: 'Arial',
-                fontSize: 46,
+                fontSize: 36,
                 stroke: '#4a1850',
                 fill: ['#ffffff', '#00ff99'],
                 fontStyle: 'italic',
@@ -228,7 +228,7 @@ class Graphics {
         const game_over_style = 
             new PIXI.TextStyle({
                 fontFamily: 'Arial',
-                fontSize: 48,
+                fontSize: 32,
                 stroke: '#4a1850',
                 fill: ['#ffffff'],
                 fontStyle: 'italic',
@@ -316,7 +316,7 @@ class Graphics {
         let boardBounds = board.getBounds();
         let score = args.player.score();
         let scoreText  = new PIXI.Text("Score: " + String(score), this.text_styles["score"]);
-        scoreText.x = boardBounds.x + 160;
+        scoreText.x = boardBounds.x + 205;
         if (args.flip) {
             scoreText.y = boardBounds.y + PLAYER_SIZE;
         } else {
@@ -328,9 +328,9 @@ class Graphics {
             let dieText = new PIXI.Text(String(die), this.text_styles["next_move"]);
             dieText.x = boardBounds.x;
             if (args.flip) {
-                dieText.y = boardBounds.y + PLAYER_SIZE;
+                dieText.y = boardBounds.y + PLAYER_SIZE - 10;
             } else {
-                dieText.y = boardBounds.y - 65;
+                dieText.y = boardBounds.y - 45;
             }
             container.addChild(dieText);
         }
@@ -350,17 +350,17 @@ class Graphics {
         cy += this.app.screen.height - PLAYER_SIZE - MARGIN;
         let p2 = this.draw_player(container, {x, y: cy, player: game.players[1], flip: false, game, redraw});
         if (game.game_over()) {
-            let text = new PIXI.Text("GAME OVER!", this.text_styles["game_over"]);
+            let text = new PIXI.Text("GAME\nOVER!", this.text_styles["game_over"]);
             text.x = x;
-            text.y = y + this.app.screen.height / 2 - 40;
+            text.y = y + this.app.screen.height / 2 - 60;
             container.addChild(text);
-            container.interactive = true;
+            text.interactive = true;
             let restart = () => {
                 this.erase();
                 this.draw_game({x, y, game: new Game()});
             };
-            container.on("click", restart);
-            container.on("tap", restart);
+            text.on("click", restart);
+            text.on("tap", restart);
         }
         return this.addChild(container);
     }
