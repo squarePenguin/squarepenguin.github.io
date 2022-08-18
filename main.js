@@ -174,7 +174,7 @@ class Graphics {
             // autoResize: true,
             // resolution: devicePixelRatio,
             width: 360,
-            height: 750
+            height: 730
          });
         document.body.appendChild(this.app.view);
         // // Resize function window
@@ -318,9 +318,9 @@ class Graphics {
         let scoreText  = new PIXI.Text("Score: " + String(score), this.text_styles["score"]);
         scoreText.x = boardBounds.x + 205;
         if (args.flip) {
-            scoreText.y = boardBounds.y + PLAYER_SIZE;
+            scoreText.y = boardBounds.y + PLAYER_SIZE - 5;
         } else {
-            scoreText.y = boardBounds.y - 45;
+            scoreText.y = boardBounds.y - 37;
         }
         container.addChild(scoreText);
         if (!args.game.game_over() && args.player.which == args.game.turn) {
@@ -352,7 +352,7 @@ class Graphics {
         if (game.game_over()) {
             let text = new PIXI.Text("GAME\nOVER!", this.text_styles["game_over"]);
             text.x = x;
-            text.y = y + this.app.screen.height / 2 - 60;
+            text.y = y + this.app.screen.height / 2 - 57;
             container.addChild(text);
             text.interactive = true;
             let restart = () => {
