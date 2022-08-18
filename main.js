@@ -348,3 +348,21 @@ const graphics = new Graphics();
 
 let game = new Game();
 graphics.draw_game({x:20, y:20, game});
+
+// Resize function window
+function resize() {
+	// Resize the renderer
+	app.renderer.resize(window.innerWidth, window.innerHeight);
+  
+  // You can use the 'screen' property as the renderer visible
+  // area, this is more useful than view.width/height because
+  // it handles resolution
+  rect.position.set(app.screen.width, app.screen.height);
+}
+
+// Listen for window resize events
+window.addEventListener('resize', resize);
+
+
+
+resize();
