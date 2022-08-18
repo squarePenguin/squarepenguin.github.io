@@ -1,0 +1,16 @@
+{
+    "background_color": "#000000",
+    "description": "A game of luck and skill.",
+    "dir": "ltr",
+    "display": "fullscreen",
+    "name": "Knucklebones",
+    "orientation": "portrait",
+    "scope": "/",
+    "short_name": "Knucklebones",
+    "start_url": "/",
+    "theme_color": "#000000",
+    "categories": [],
+    "screenshots": [],
+    "icons": [],
+    "shortcuts": []
+  }
