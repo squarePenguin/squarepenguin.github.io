@@ -172,6 +172,7 @@ class Graphics {
         this.app = new PIXI.Application({ 
             autoResize: true,
             resolution: devicePixelRatio,
+            resizeTo: window,
          });
         document.body.appendChild(this.app.view);
         this.children = []
@@ -319,6 +320,8 @@ class Graphics {
 
     draw_game({x, y, game}) {
         let container = new PIXI.Container();
+        container.scale.x = window.innerWidth / 1000;
+        container.scale.y = window.innerHeight / 1000;
         let cy = y;
         let redraw = () => {
             this.erase();
@@ -352,9 +355,7 @@ graphics.draw_game({x:20, y:20, game});
 // Resize function window
 function resize() {
 	// Resize the renderer
-	app.renderer.resize(screen.width, screen.height);
-  
-
+	app.renderer.resize(window.innerWidth, window.innerHeight);
 }
 
 // Listen for window resize events
