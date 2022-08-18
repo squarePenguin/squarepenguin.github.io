@@ -164,17 +164,29 @@ class Game {
 
 const CELL_SIZE = 100;
 const CELL_COLOUR = 0xDE3249;
+const MARGIN = 25
 const PADDING = 5;
 const PLAYER_SIZE = 3 * CELL_SIZE + 3 * PADDING;
 
 class Graphics {
     constructor() {
         this.app = new PIXI.Application({ 
-            autoResize: true,
-            resolution: devicePixelRatio,
-            resizeTo: window,
+            // autoResize: true,
+            // resolution: devicePixelRatio,
+            width: 360,
+            height: 800
          });
         document.body.appendChild(this.app.view);
+        // // Resize function window
+        // let resize = () => {
+        //     // Resize the renderer
+        //     this.app.renderer.resize(window.innerWidth, window.innerHeight);
+        // }
+
+        // // Listen for window resize events
+        // window.addEventListener('resize', resize);
+
+        // resize();
         this.children = []
         const dice_style = (fill) =>
             new PIXI.TextStyle({
@@ -195,7 +207,7 @@ class Graphics {
         const score_style = 
             new PIXI.TextStyle({
                 fontFamily: 'Arial',
-                fontSize: 46,
+                fontSize: 32,
                 fill: ['#ffffff'],
                 strokeThickness: 5,
                 wordWrapWidth: 440,
@@ -204,7 +216,7 @@ class Graphics {
         const next_move_style = 
             new PIXI.TextStyle({
                 fontFamily: 'Arial',
-                fontSize: 100,
+                fontSize: 46,
                 stroke: '#4a1850',
                 fill: ['#ffffff', '#00ff99'],
                 fontStyle: 'italic',
@@ -216,7 +228,7 @@ class Graphics {
         const game_over_style = 
             new PIXI.TextStyle({
                 fontFamily: 'Arial',
-                fontSize: 50,
+                fontSize: 48,
                 stroke: '#4a1850',
                 fill: ['#ffffff'],
                 fontStyle: 'italic',
@@ -304,15 +316,22 @@ class Graphics {
         let boardBounds = board.getBounds();
         let score = args.player.score();
         let scoreText  = new PIXI.Text("Score: " + String(score), this.text_styles["score"]);
-        scoreText.x = boardBounds.x + boardBounds.width + 2 * PADDING;
-        scoreText.y = boardBounds.y + PADDING;
+        scoreText.x = boardBounds.x + 160;
+        if (args.flip) {
+            scoreText.y = boardBounds.y + PLAYER_SIZE;
+        } else {
+            scoreText.y = boardBounds.y - 45;
+        }
         container.addChild(scoreText);
-        console.log(args.player.which, args.game.turn, game.game_over());
         if (!args.game.game_over() && args.player.which == args.game.turn) {
             let die = args.game.die;
             let dieText = new PIXI.Text(String(die), this.text_styles["next_move"]);
-            dieText.x = boardBounds.x + boardBounds.width + 70;
-            dieText.y = boardBounds.y + boardBounds.height / 2 - 50;
+            dieText.x = boardBounds.x;
+            if (args.flip) {
+                dieText.y = boardBounds.y + PLAYER_SIZE;
+            } else {
+                dieText.y = boardBounds.y - 65;
+            }
             container.addChild(dieText);
         }
         return parent.addChild(container);
@@ -320,20 +339,20 @@ class Graphics {
 
     draw_game({x, y, game}) {
         let container = new PIXI.Container();
-        container.scale.x = window.innerWidth / 1000;
-        container.scale.y = window.innerHeight / 1000;
+        // container.scale.x = window.innerWidth / 1000;
+        // container.scale.y = window.innerHeight / 1000;
         let cy = y;
         let redraw = () => {
             this.erase();
             this.draw_game({x, y, game});
         }
         let p1 = this.draw_player(container, {x, y: cy, player: game.players[0], flip: true, game, redraw});
-        cy += PLAYER_SIZE + 100;
+        cy += this.app.screen.height - PLAYER_SIZE - MARGIN;
         let p2 = this.draw_player(container, {x, y: cy, player: game.players[1], flip: false, game, redraw});
         if (game.game_over()) {
             let text = new PIXI.Text("GAME OVER!", this.text_styles["game_over"]);
-            text.x = x + 100;
-            text.y = y + 330;
+            text.x = x;
+            text.y = y + this.app.screen.height / 2 - 40;
             container.addChild(text);
             container.interactive = true;
             let restart = () => {
@@ -350,17 +369,4 @@ class Graphics {
 const graphics = new Graphics();
 
 let game = new Game();
-graphics.draw_game({x:20, y:20, game});
-
-// Resize function window
-function resize() {
-	// Resize the renderer
-	app.renderer.resize(window.innerWidth, window.innerHeight);
-}
-
-// Listen for window resize events
-window.addEventListener('resize', resize);
-
-
-
-resize();
+graphics.draw_game({x:MARGIN, y:MARGIN, game});
