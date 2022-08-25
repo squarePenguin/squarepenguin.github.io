@@ -256,6 +256,7 @@ class Graphics {
         };
         this.bot = bot;
         this.botEnabled = false;
+        this.wins = [0, 0];
     }
 
     set_onclick(on, f) {
@@ -332,9 +333,10 @@ class Graphics {
         return container;
     }
 
-    drawScore(player) {
+    drawScore(player, wins) {
         let score = player.score();
-        let scoreText  = new PIXI.Text("Score: " + String(score), this.textStyles["score"]);
+        let text = "Score: " + String(score) + "/" + String(wins);
+        let scoreText = new PIXI.Text(text, this.textStyles["score"]);
         return scoreText;
     }
 
@@ -347,7 +349,7 @@ class Graphics {
         let board = this.drawPlayerBoard(args);
         this.addChildToContainer(container, board, {x: 0, y: 0});
         {
-            let scoreText = this.drawScore(args.player);
+            let scoreText = this.drawScore(args.player, args.wins);
             let x = PLAYER_SIZE - 95;
             let y = -30;
             if (args.flip) {
@@ -391,7 +393,7 @@ class Graphics {
         for (let i = 0; i < game.players.length; i += 1) {
             let flip = (i == 0);
             let botEnabled = i == 0 ? this.botEnabled : false;
-            let player = this.drawPlayer({player: game.players[i], flip, game, botEnabled, redraw});
+            let player = this.drawPlayer({player: game.players[i], flip, game, botEnabled, redraw, wins: this.wins[i]});
             this.addChildToContainer(container, player, {x, y: cy});
             cy = this.app.screen.height - PLAYER_SIZE - 50;
         }
@@ -415,10 +417,16 @@ class Graphics {
         if (game.gameOver()) {
             let text = new PIXI.Text("GAME\nOVER!", this.textStyles["gameOver"]);
             this.addChildToContainer(container, text, {x: 25, y: 300});
-            container.addChild(text);
-            text.interactive = true;
-            
-            this.set_onclick(text, restart);
+
+            let score1 = game.players[0].score();
+            let score2 = game.players[1].score();
+            let winner;
+            if (score1 > score2 || (score1 == score2 && game.turn == 1)) {
+                winner = 0;
+            } else {
+                winner = 1;
+            }
+            this.wins[winner] += 1;
         } else if (this.botEnabled && game.turn == 0) {
             setTimeout(() => {
                 let move = this.bot(game);
