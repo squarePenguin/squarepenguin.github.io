@@ -206,7 +206,7 @@ class Graphics {
                 dropShadowDistance: 4,
                 lineJoin: 'round',
             });
-        const score_style = 
+        const scoreStyle =
             new PIXI.TextStyle({
                 fontFamily: 'Arial',
                 fontSize: 20,
@@ -215,7 +215,7 @@ class Graphics {
                 wordWrapWidth: 440,
                 lineJoin: 'round',
             });
-        const next_move_style = 
+        const nextMoveStyle =
             new PIXI.TextStyle({
                 fontFamily: 'Arial',
                 fontSize: 60,
@@ -227,7 +227,7 @@ class Graphics {
                 wordWrapWidth: 440,
                 lineJoin: 'round',
             });
-        const game_over_style = 
+        const gameOverStyle =
             new PIXI.TextStyle({
                 fontFamily: 'Arial',
                 fontSize: 28,
@@ -239,20 +239,20 @@ class Graphics {
                 wordWrapWidth: 440,
                 lineJoin: 'round',
             });
-        const button_style = 
+        const buttonStyle =
             new PIXI.TextStyle({
                 fontFamily: 'Arial',
                 fontSize: 22,
                 fill: ['#ffffff'],
             });
-        this.text_styles = {
+        this.textStyles = {
             1: dice_style(['#ffffff', '#00ff99']),
             2: dice_style(['#ffffff', "#ffff00"]),
             3: dice_style(['#5ffcfc', "#9e5ffc"]),
-            score: score_style,
-            next_move: next_move_style,
-            gameOver: game_over_style,
-            button: button_style
+            score: scoreStyle,
+            next_move: nextMoveStyle,
+            gameOver: gameOverStyle,
+            button: buttonStyle
         };
         this.botEnabled = false;
     }
@@ -291,7 +291,7 @@ class Graphics {
         container.addChild(box);
         this.addChildToContainer(container, box, {x: 0, y: 0});
         if (die != -1) {
-            let text = new PIXI.Text(DIE_UNICODE[die - 1], this.text_styles[die_count]);
+            let text = new PIXI.Text(DIE_UNICODE[die - 1], this.textStyles[die_count]);
             this.addChildToContainer(box, text, {x: 15, y: -25});
         }
         return container;
@@ -318,7 +318,7 @@ class Graphics {
         return container;
     }
 
-    draw_player_board({player, flip, game, redraw}) {
+    drawPlayerBoard({player, flip, game, redraw}) {
         let container = new PIXI.Container();
         let cx = 0;
         for (const column of player.columns) {
@@ -331,17 +331,17 @@ class Graphics {
 
     drawScore(player) {
         let score = player.score();
-        let scoreText  = new PIXI.Text("Score: " + String(score), this.text_styles["score"]);
+        let scoreText  = new PIXI.Text("Score: " + String(score), this.textStyles["score"]);
         return scoreText;
     }
 
     drawNextDie(die) {
-        return new PIXI.Text(DIE_UNICODE[die - 1], this.text_styles["next_move"]);
+        return new PIXI.Text(DIE_UNICODE[die - 1], this.textStyles["next_move"]);
     }
 
-    draw_player(args) {
+    drawPlayer(args) {
         let container = new PIXI.Container();
-        let board = this.draw_player_board(args);
+        let board = this.drawPlayerBoard(args);
         this.addChildToContainer(container, board, {x: 0, y: 0});
         {
             let scoreText = this.drawScore(args.player);
@@ -367,12 +367,12 @@ class Graphics {
         return container;
     }
     
-    draw_button(text, f) {
+    drawButton(text, f) {
         let button = new PIXI.Graphics();
         button.beginFill(BUTTON_COLOR);
         button.drawRoundedRect(0, 0, 85, 30, 5);
         button.endFill();
-        let textp = new PIXI.Text(text, this.text_styles["button"]);
+        let textp = new PIXI.Text(text, this.textStyles["button"]);
         this.addChildToContainer(button, textp, {x: 5, y: 2});
         this.set_onclick(button, f);
         return button;
@@ -387,7 +387,7 @@ class Graphics {
         let cy = y;
         for (let i = 0; i < game.players.length; i += 1) {
             let flip = (i == 0);
-            let player = this.draw_player({player: game.players[i], flip, game, redraw});
+            let player = this.drawPlayer({player: game.players[i], flip, game, redraw});
             this.addChildToContainer(container, player, {x, y: cy});
             cy = this.app.screen.height - PLAYER_SIZE - 50;
         }
@@ -395,12 +395,12 @@ class Graphics {
             this.erase();
             this.drawGame({x, y, game: new Game()});
         };
-        let restartButton = this.draw_button("Restart", restart);
+        let restartButton = this.drawButton("Restart", restart);
         this.addChildToContainer(container, restartButton, {x: 120, y: PLAYER_SIZE + 15});
-        // let menu_button = this.draw_button("menu", restart);
+        // let menu_button = this.drawButton("menu", restart);
         // this.addChildToContainer(container, menu_button, {x: 120, y: PLAYER_SIZE + 55});
         if (game.gameOver()) {
-            let text = new PIXI.Text("GAME\nOVER!", this.text_styles["gameOver"]);
+            let text = new PIXI.Text("GAME\nOVER!", this.textStyles["gameOver"]);
             this.addChildToContainer(container, text, {x: 25, y: 300});
             container.addChild(text);
             text.interactive = true;
