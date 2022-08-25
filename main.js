@@ -8,7 +8,7 @@ class Arr {
         return arr;
     }
 
-    static for_all(arr, f) {
+    static forAll(arr, f) {
         return arr.findIndex(x => !f(x)) == -1;
     }
 
@@ -49,23 +49,23 @@ class Column {
         this.which = which;
     }
 
-    is_full() {
-        return Arr.for_all(this.cells, cell => cell != -1);
+    isFull() {
+        return Arr.forAll(this.cells, cell => cell != -1);
     }
 
-    add_die(die) {
+    addDie(die) {
         let first_empty = this.cells.findIndex(cell => cell == -1);
         this.cells[first_empty] = die;
     }
 
-    non_empty() {
+    nonEmpty() {
         return this.cells.filter(cell => cell != -1);
     }
 
-    die_counts() {
+    dieCounts() {
         let counts = {};
         let max_count = 0;
-        this.non_empty().forEach(x => {
+        this.nonEmpty().forEach(x => {
             if (counts[x]) {
                 counts[x] += 1;
             } else {
@@ -78,8 +78,8 @@ class Column {
     }
 
     score() {
-        const counts = this.die_counts();
-        return this.non_empty().reduce((sum, cell) => sum + cell * counts[cell], 0);
+        const counts = this.dieCounts();
+        return this.nonEmpty().reduce((sum, cell) => sum + cell * counts[cell], 0);
     }
 
     negate(die) {
@@ -101,18 +101,18 @@ class Player {
         this.which = which;
     }
 
-    is_full() {
-        return Arr.for_all(this.columns, col => col.is_full());
+    isFull() {
+        return Arr.forAll(this.columns, col => col.isFull());
     }
 
-    add_die({column, die}) {
-        this.columns[column].add_die(die);
+    addDie({column, die}) {
+        this.columns[column].addDie(die);
     }
 
-    possible_moves() {
+    possibleMoves() {
         let result = new Array();
         for (let i = 0; i < this.columns.length; i += 1) {
-            if (!this.columns[i].is_full()) {
+            if (!this.columns[i].isFull()) {
                 result.push(i);
             }
         }
@@ -134,30 +134,30 @@ class Game {
         this.die = Rand.die();
     }
 
-    game_over() {
-        return Arr.exists(this.players, player => player.is_full());
+    gameOver() {
+        return Arr.exists(this.players, player => player.isFull());
     }
 
-    next_turn() {
-        if (this.game_over()) return;
+    nextTurn() {
+        if (this.gameOver()) return;
         
         this.die = Rand.int(6) + 1;
         this.turn = 1 - this.turn;
     }
 
-    available_moves() {
-        return this.players[this.turn].possible_moves();
+    availableMoves() {
+        return this.players[this.turn].possibleMoves();
     }
 
-    valid_move(column) {
-        return !this.game_over() && this.available_moves().indexOf(column) != -1;
+    validMove(column) {
+        return !this.gameOver() && this.availableMoves().indexOf(column) != -1;
     }
 
-    player_move(column) {
+    playerMove(column) {
         let move = {column, die: this.die};
-        this.players[this.turn].add_die(move);
+        this.players[this.turn].addDie(move);
         this.players[1 - this.turn].negate(move);
-        this.next_turn();
+        this.nextTurn();
     }
 }
 
@@ -251,9 +251,10 @@ class Graphics {
             3: dice_style(['#5ffcfc', "#9e5ffc"]),
             score: score_style,
             next_move: next_move_style,
-            game_over: game_over_style,
+            gameOver: game_over_style,
             button: button_style
         };
+        this.botEnabled = false;
     }
 
     set_onclick(on, f) {
@@ -281,7 +282,7 @@ class Graphics {
         this.children = [];
     }
 
-    draw_cell({die, die_count}) {
+    drawCell({die, die_count}) {
         let container = new PIXI.Container();
         const box = new PIXI.Graphics();
         box.beginTextureFill({color: CELL_COLOUR, alpha: .9});
@@ -296,20 +297,20 @@ class Graphics {
         return container;
     }
 
-    draw_column({column, flip, game, redraw, player}) {
+    drawColumn({column, flip, game, redraw, player}) {
         let container = new PIXI.Container();
         let cells = flip ? Arr.rev(column.cells) : column.cells;
-        let die_counts = column.die_counts();
+        let dieCounts = column.dieCounts();
 
         let cy = 0;
         for (const die of cells) {
-            let cell = this.draw_cell({die, die_count: die_counts[die]});
+            let cell = this.drawCell({die, die_count: dieCounts[die]});
             this.addChildToContainer(container, cell, {x: 0, y: cy});
             cy += CELL_SIZE + PADDING;
         }
         let on_click = () => {
-            if (player.which == game.turn && game.valid_move(column.which)) {
-                game.player_move(column.which);
+            if (player.which == game.turn && game.validMove(column.which)) {
+                game.playerMove(column.which);
                 redraw();
             }
         };
@@ -321,20 +322,20 @@ class Graphics {
         let container = new PIXI.Container();
         let cx = 0;
         for (const column of player.columns) {
-            let col = this.draw_column({column, flip, game, redraw, player});
+            let col = this.drawColumn({column, flip, game, redraw, player});
             this.addChildToContainer(container, col, {x: cx, y:0});
             cx += CELL_SIZE + PADDING;
         }
         return container;
     }
 
-    draw_score(player) {
+    drawScore(player) {
         let score = player.score();
         let scoreText  = new PIXI.Text("Score: " + String(score), this.text_styles["score"]);
         return scoreText;
     }
 
-    draw_next_die(die) {
+    drawNextDie(die) {
         return new PIXI.Text(DIE_UNICODE[die - 1], this.text_styles["next_move"]);
     }
 
@@ -343,7 +344,7 @@ class Graphics {
         let board = this.draw_player_board(args);
         this.addChildToContainer(container, board, {x: 0, y: 0});
         {
-            let scoreText = this.draw_score(args.player);
+            let scoreText = this.drawScore(args.player);
             let x = PLAYER_SIZE - 95;
             let y = -30;
             if (args.flip) {
@@ -352,8 +353,8 @@ class Graphics {
     
             this.addChildToContainer(container, scoreText, {x, y});
         }
-        if (!args.game.game_over() && args.player.which == args.game.turn) {
-            let dieText = this.draw_next_die(args.game.die);
+        if (!args.game.gameOver() && args.player.which == args.game.turn) {
+            let dieText = this.drawNextDie(args.game.die);
             let x = 0;
             let y;
             if (args.flip) {
@@ -377,11 +378,11 @@ class Graphics {
         return button;
     }
 
-    draw_game({x, y, game}) {
+    drawGame({x, y, game}) {
         let container = new PIXI.Container();
         let redraw = () => {
             this.erase();
-            this.draw_game({x, y, game});
+            this.drawGame({x, y, game});
         }
         let cy = y;
         for (let i = 0; i < game.players.length; i += 1) {
@@ -392,14 +393,14 @@ class Graphics {
         }
         let restart = () => {
             this.erase();
-            this.draw_game({x, y, game: new Game()});
+            this.drawGame({x, y, game: new Game()});
         };
-        let restart_button = this.draw_button("Restart", restart);
-        this.addChildToContainer(container, restart_button, {x: 120, y: PLAYER_SIZE + 15});
+        let restartButton = this.draw_button("Restart", restart);
+        this.addChildToContainer(container, restartButton, {x: 120, y: PLAYER_SIZE + 15});
         // let menu_button = this.draw_button("menu", restart);
         // this.addChildToContainer(container, menu_button, {x: 120, y: PLAYER_SIZE + 55});
-        if (game.game_over()) {
-            let text = new PIXI.Text("GAME\nOVER!", this.text_styles["game_over"]);
+        if (game.gameOver()) {
+            let text = new PIXI.Text("GAME\nOVER!", this.text_styles["gameOver"]);
             this.addChildToContainer(container, text, {x: 25, y: 300});
             container.addChild(text);
             text.interactive = true;
@@ -413,4 +414,4 @@ class Graphics {
 const graphics = new Graphics();
 
 let game = new Game();
-graphics.draw_game({x:MARGIN, y:10, game});
+graphics.drawGame({x:MARGIN, y:10, game});
