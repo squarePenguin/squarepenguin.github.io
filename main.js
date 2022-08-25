@@ -164,10 +164,11 @@ class Game {
 const DIE_SIZE = 60;
 const CELL_SIZE = 90;
 const CELL_COLOUR = 0xDE3249;
+const BUTTON_COLOR = 0x3349dd;
 const MARGIN = 25
 const PADDING = 5;
 const PLAYER_SIZE = 3 * CELL_SIZE + 3 * PADDING;
-
+const DIE_UNICODE = ["\u2680", "\u2681", "\u2682", 	"\u2683", "\u2684", "\u2685"]
 class Graphics {
     constructor() {
         this.app = new PIXI.Application({ 
@@ -192,9 +193,9 @@ class Graphics {
         const dice_style = (fill) =>
             new PIXI.TextStyle({
                 fontFamily: 'Arial',
-                fontSize: 46,
-                fontStyle: 'italic',
-                fontWeight: 'bold',
+                fontSize: 100,
+                // fontStyle: 'italic',
+                // fontWeight: 'bold',
                 fill, // gradient
                 stroke: '#4a1850',
                 strokeThickness: 5,
@@ -208,7 +209,7 @@ class Graphics {
         const score_style = 
             new PIXI.TextStyle({
                 fontFamily: 'Arial',
-                fontSize: 22,
+                fontSize: 20,
                 fill: ['#ffffff'],
                 strokeThickness: 5,
                 wordWrapWidth: 440,
@@ -217,11 +218,11 @@ class Graphics {
         const next_move_style = 
             new PIXI.TextStyle({
                 fontFamily: 'Arial',
-                fontSize: 36,
+                fontSize: 60,
                 stroke: '#4a1850',
                 fill: ['#ffffff', '#00ff99'],
-                fontStyle: 'italic',
-                fontWeight: 'bold',
+                // fontStyle: 'italic',
+                // fontWeight: 'bold',
                 strokeThickness: 5,
                 wordWrapWidth: 440,
                 lineJoin: 'round',
@@ -238,14 +239,27 @@ class Graphics {
                 wordWrapWidth: 440,
                 lineJoin: 'round',
             });
+        const button_style = 
+            new PIXI.TextStyle({
+                fontFamily: 'Arial',
+                fontSize: 22,
+                fill: ['#ffffff'],
+            });
         this.text_styles = {
             1: dice_style(['#ffffff', '#00ff99']),
             2: dice_style(['#ffffff', "#ffff00"]),
             3: dice_style(['#5ffcfc', "#9e5ffc"]),
             score: score_style,
             next_move: next_move_style,
-            game_over: game_over_style
+            game_over: game_over_style,
+            button: button_style
         };
+    }
+
+    set_onclick(on, f) {
+        on.interactive = true;
+        on.on("click", f);
+        on.on("tap", f);
     }
 
     addChild(child) {
@@ -276,13 +290,13 @@ class Graphics {
         container.addChild(box);
         this.addChildToContainer(container, box, {x: 0, y: 0});
         if (die != -1) {
-            let text = new PIXI.Text(String(die), this.text_styles[die_count]);
-            this.addChildToContainer(box, text, {x: 27, y: 15});
+            let text = new PIXI.Text(DIE_UNICODE[die - 1], this.text_styles[die_count]);
+            this.addChildToContainer(box, text, {x: 15, y: -25});
         }
         return container;
     }
 
-    draw_column({column, flip, game, redraw}) {
+    draw_column({column, flip, game, redraw, player}) {
         let container = new PIXI.Container();
         let cells = flip ? Arr.rev(column.cells) : column.cells;
         let die_counts = column.die_counts();
@@ -294,14 +308,12 @@ class Graphics {
             cy += CELL_SIZE + PADDING;
         }
         let on_click = () => {
-            if (game.valid_move(column.which)) {
+            if (player.which == game.turn && game.valid_move(column.which)) {
                 game.player_move(column.which);
                 redraw();
             }
         };
-        container.interactive = true;
-        container.on("click", on_click);
-        container.on("tap", on_click);
+        this.set_onclick(container, on_click);
         return container;
     }
 
@@ -309,7 +321,7 @@ class Graphics {
         let container = new PIXI.Container();
         let cx = 0;
         for (const column of player.columns) {
-            let col = this.draw_column({column, flip, game, redraw});
+            let col = this.draw_column({column, flip, game, redraw, player});
             this.addChildToContainer(container, col, {x: cx, y:0});
             cx += CELL_SIZE + PADDING;
         }
@@ -323,45 +335,47 @@ class Graphics {
     }
 
     draw_next_die(die) {
-        return new PIXI.Text(String(die), this.text_styles["next_move"]);
+        return new PIXI.Text(DIE_UNICODE[die - 1], this.text_styles["next_move"]);
     }
 
     draw_player(args) {
         let container = new PIXI.Container();
         let board = this.draw_player_board(args);
-        let board_bla = this.addChildToContainer(container, board, {x: 0, y: 0});
-        let boardBounds = board_bla.getBounds();
+        this.addChildToContainer(container, board, {x: 0, y: 0});
         {
             let scoreText = this.draw_score(args.player);
-            let x = boardBounds.x + 210;
-            let y = boardBounds.y - 37;
+            let x = PLAYER_SIZE - 95;
+            let y = -30;
             if (args.flip) {
-                y = boardBounds.y + PLAYER_SIZE - 5;
+                y = PLAYER_SIZE - 5;
             }
     
             this.addChildToContainer(container, scoreText, {x, y});
         }
         if (!args.game.game_over() && args.player.which == args.game.turn) {
             let dieText = this.draw_next_die(args.game.die);
-            let x = boardBounds.x;
+            let x = 0;
             let y;
             if (args.flip) {
-                y = dieText.y = boardBounds.y + PLAYER_SIZE - 10;
+                y = PLAYER_SIZE - 25;
             } else {
-                y = boardBounds.y - 45;
+                y = -60;
             }
             this.addChildToContainer(container, dieText, {x, y});
         }
         return container;
     }
     
-    // draw_button(text, f) {
-    //     let button = new PIXI.Graphics();
-    //     button.beginFill(0x753b1c);
-    //     button.drawRect(0, 0, 100, 30);
-    //     button.endFill();
-    //     let text = new PIXI.T
-    // }
+    draw_button(text, f) {
+        let button = new PIXI.Graphics();
+        button.beginFill(BUTTON_COLOR);
+        button.drawRoundedRect(0, 0, 85, 30, 5);
+        button.endFill();
+        let textp = new PIXI.Text(text, this.text_styles["button"]);
+        this.addChildToContainer(button, textp, {x: 5, y: 2});
+        this.set_onclick(button, f);
+        return button;
+    }
 
     draw_game({x, y, game}) {
         let container = new PIXI.Container();
@@ -376,18 +390,21 @@ class Graphics {
             this.addChildToContainer(container, player, {x, y: cy});
             cy = this.app.screen.height - PLAYER_SIZE - 50;
         }
+        let restart = () => {
+            this.erase();
+            this.draw_game({x, y, game: new Game()});
+        };
+        let restart_button = this.draw_button("Restart", restart);
+        this.addChildToContainer(container, restart_button, {x: 120, y: PLAYER_SIZE + 15});
+        // let menu_button = this.draw_button("menu", restart);
+        // this.addChildToContainer(container, menu_button, {x: 120, y: PLAYER_SIZE + 55});
         if (game.game_over()) {
             let text = new PIXI.Text("GAME\nOVER!", this.text_styles["game_over"]);
-            text.x = x;
-            text.y = y + this.app.screen.height / 2 - 55;
+            this.addChildToContainer(container, text, {x: 25, y: 300});
             container.addChild(text);
             text.interactive = true;
-            let restart = () => {
-                this.erase();
-                this.draw_game({x, y, game: new Game()});
-            };
-            text.on("click", restart);
-            text.on("tap", restart);
+            
+            this.set_onclick(text, restart);
         }
         return this.addChild(container);
     }
