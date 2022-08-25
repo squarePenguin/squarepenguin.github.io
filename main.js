@@ -170,7 +170,7 @@ const PADDING = 5;
 const PLAYER_SIZE = 3 * CELL_SIZE + 3 * PADDING;
 const DIE_UNICODE = ["\u2680", "\u2681", "\u2682", 	"\u2683", "\u2684", "\u2685"]
 class Graphics {
-    constructor() {
+    constructor({bot}) {
         this.app = new PIXI.Application({ 
             // autoResize: true,
             // resolution: devicePixelRatio,
@@ -254,6 +254,7 @@ class Graphics {
             gameOver: gameOverStyle,
             button: buttonStyle
         };
+        this.bot = bot;
         this.botEnabled = false;
     }
 
@@ -297,7 +298,7 @@ class Graphics {
         return container;
     }
 
-    drawColumn({column, flip, game, redraw, player}) {
+    drawColumn({column, flip, game, redraw, player, botEnabled}) {
         let container = new PIXI.Container();
         let cells = flip ? Arr.rev(column.cells) : column.cells;
         let dieCounts = column.dieCounts();
@@ -308,21 +309,23 @@ class Graphics {
             this.addChildToContainer(container, cell, {x: 0, y: cy});
             cy += CELL_SIZE + PADDING;
         }
-        let on_click = () => {
-            if (player.which == game.turn && game.validMove(column.which)) {
-                game.playerMove(column.which);
-                redraw();
-            }
-        };
-        this.set_onclick(container, on_click);
+        if (!botEnabled) {
+            let on_click = () => {
+                if (player.which == game.turn && game.validMove(column.which)) {
+                    game.playerMove(column.which);
+                    redraw();
+                }
+            };
+            this.set_onclick(container, on_click);
+        }
         return container;
     }
 
-    drawPlayerBoard({player, flip, game, redraw}) {
+    drawPlayerBoard({player, flip, game, redraw, botEnabled}) {
         let container = new PIXI.Container();
         let cx = 0;
         for (const column of player.columns) {
-            let col = this.drawColumn({column, flip, game, redraw, player});
+            let col = this.drawColumn({column, flip, game, redraw, player, botEnabled});
             this.addChildToContainer(container, col, {x: cx, y:0});
             cx += CELL_SIZE + PADDING;
         }
@@ -387,7 +390,8 @@ class Graphics {
         let cy = y;
         for (let i = 0; i < game.players.length; i += 1) {
             let flip = (i == 0);
-            let player = this.drawPlayer({player: game.players[i], flip, game, redraw});
+            let botEnabled = i == 0 ? this.botEnabled : false;
+            let player = this.drawPlayer({player: game.players[i], flip, game, botEnabled, redraw});
             this.addChildToContainer(container, player, {x, y: cy});
             cy = this.app.screen.height - PLAYER_SIZE - 50;
         }
@@ -395,8 +399,17 @@ class Graphics {
             this.erase();
             this.drawGame({x, y, game: new Game()});
         };
+
         let restartButton = this.drawButton("Restart", restart);
         this.addChildToContainer(container, restartButton, {x: 120, y: PLAYER_SIZE + 15});
+        
+        let toggleBot = () => {
+            this.botEnabled = !this.botEnabled;
+            redraw();
+        }
+        let botButtonText = this.botEnabled ? "Bot Off" : "Bot On";
+        let botButton = this.drawButton(botButtonText, toggleBot);
+        this.addChildToContainer(container, botButton, {x: 120, y: PLAYER_SIZE + 55});
         // let menu_button = this.drawButton("menu", restart);
         // this.addChildToContainer(container, menu_button, {x: 120, y: PLAYER_SIZE + 55});
         if (game.gameOver()) {
@@ -406,12 +419,22 @@ class Graphics {
             text.interactive = true;
             
             this.set_onclick(text, restart);
+        } else if (this.botEnabled && game.turn == 0) {
+            setTimeout(() => {
+                let move = this.bot(game);
+                game.playerMove(move);
+                redraw();
+            }, 500);
         }
         return this.addChild(container);
     }
 }
 
-const graphics = new Graphics();
+function randomBot(game) {
+    return Rand.pick(game.availableMoves());
+}
+
+const graphics = new Graphics({bot: randomBot});
 
 let game = new Game();
 graphics.drawGame({x:MARGIN, y:10, game});
